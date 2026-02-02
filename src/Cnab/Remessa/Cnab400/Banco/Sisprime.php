@@ -8,6 +8,7 @@ use Eduardokum\LaravelBoleto\Exception\ValidationException;
 use Eduardokum\LaravelBoleto\Cnab\Remessa\Cnab400\AbstractRemessa;
 use Eduardokum\LaravelBoleto\Contracts\Boleto\Boleto as BoletoContract;
 use Eduardokum\LaravelBoleto\Contracts\Cnab\Remessa as RemessaContract;
+use Illuminate\Support\Facades\Log;
 
 class Sisprime extends AbstractRemessa implements RemessaContract
 {
@@ -158,8 +159,7 @@ class Sisprime extends AbstractRemessa implements RemessaContract
         $this->add(38, 62, Util::formatCnab('A', $boleto->getNumeroControle(), 25));
         $this->add(63, 65, $this->getCodigoBanco());
         $this->add(66,66, $boleto->getMulta() > 0 ? '2' : '0'); // se 2 considerar perc multa, se zero desconsidera multa 
-        $this->add(67,70, Util::formatCnab('9', $boleto->getMulta() > 0 ? $boleto->getMulta() : '0', 3));
-        
+        $this->add(67,70, Util::formatCnab('9', $boleto->getMulta(), 3));
         $this->add(71, 81, Util::formatCnab('9', $boleto->getNossoNumero(), 11));
         $this->add(82, 82, CalculoDV::sisprimeNossoNumero($boleto->getCarteira().$boleto->getNumero()));
         
@@ -190,7 +190,7 @@ class Sisprime extends AbstractRemessa implements RemessaContract
         $this->add(150, 150, 'N');
         $this->add(151, 156, $boleto->getDataDocumento()->format('dmy'));
         $this->add(157, 160, '0000');
-        $this->add(161, 173, Util::formatCnab('9', $boleto->getMoraDia(), 13, 2));
+        $this->add(161, 173, Util::formatCnab('9', Util::percent($boleto->getValor(), $boleto->getJuros()), 13, 2));
         $this->add(174, 179, $boleto->getDesconto() > 0 ? $boleto->getDataDesconto()->format('dmy') : '000000');
         $this->add(180, 192, Util::formatCnab('9', $boleto->getDesconto(), 13, 2));
         $this->add(193, 205, '0000000000000');
