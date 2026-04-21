@@ -16,11 +16,13 @@ class Bnb extends AbstractRemessa implements RemessaContract
     const ESPECIE_CHEQUE = '03';
     const ESPECIE_CARNE = '04';
     const ESPECIE_RECIBO = '05';
+    const ESPECIE_DUPLICATA_PREST_SERVICO = '06';
     const ESPECIE_OUTROS = '19';
     const OCORRENCIA_REMESSA = '01';
     const OCORRENCIA_PEDIDO_BAIXA = '02';
     const OCORRENCIA_CONCESSAO_ABATIMENTO = '04';
     const OCORRENCIA_ALT_VENCIMENTO = '06';
+    const OCORRENCIA_ALT_USO_EMPRESA = '07';
     const OCORRENCIA_ALT_SEUNUMERO = '08';
     const OCORRENCIA_PROTESTAR = '09';
     const OCORRENCIA_NAO_PROTESTAR = '10';
