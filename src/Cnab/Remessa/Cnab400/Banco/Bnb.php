@@ -50,7 +50,7 @@ class Bnb extends AbstractRemessa implements RemessaContract
      *
      * @var array
      */
-    protected $carteiras = ['21'];
+    protected $carteiras = ['21', '41', '51'];
 
     /**
      * Caracter de fim de linha
@@ -73,11 +73,16 @@ class Bnb extends AbstractRemessa implements RemessaContract
      */
     public function getCarteiraNumero()
     {
-        if ($this->getCarteira() == '21') {
-            return '4';
+        switch ($this->getCarteira()) {
+            case '21':
+                return '4';
+            case '41':
+                return '5';
+            case '51':
+                return 'I';
+            default:
+                return '1';
         }
-
-        return '1';
     }
 
     /**
@@ -100,7 +105,7 @@ class Bnb extends AbstractRemessa implements RemessaContract
         $this->add(41, 46, '');
         $this->add(47, 76, Util::formatCnab('X', $this->getBeneficiario()->getNome(), 30));
         $this->add(77, 79, $this->getCodigoBanco());
-        $this->add(80, 94, Util::formatCnab('X', 'B.DO NORDESTE', 15));
+        $this->add(80, 94, Util::formatCnab('X', 'B. DO NORDESTE', 15));
         $this->add(95, 100, $this->getDataRemessa('dmy'));
         $this->add(101, 394, '');
         $this->add(395, 400, Util::formatCnab('9', 1, 6));
@@ -117,7 +122,7 @@ class Bnb extends AbstractRemessa implements RemessaContract
     public function addBoleto(BoletoContract $boleto)
     {
         $this->boletos[] = $boleto;
-        $this->iniciaDetalhe(($chaveNfe = $boleto->getChaveNfe()) ? 44 : 0);
+        $this->iniciaDetalhe(0);
 
         $this->add(1, 1, '1');
         $this->add(2, 17, '');
@@ -133,7 +138,7 @@ class Bnb extends AbstractRemessa implements RemessaContract
         $this->add(81, 86, '000000'); // Data segundo desconto
         $this->add(87, 99, Util::formatCnab('9', '0', 13)); // Segundo desconto
         $this->add(100, 107, '');
-        $this->add(108, 108, Util::formatCnab('9', $this->getCarteiraNumero(), 1));
+        $this->add(108, 108, Util::formatCnab('X', $this->getCarteiraNumero(), 1));
         $this->add(109, 110, self::OCORRENCIA_REMESSA); // REGISTRO
         if ($boleto->getStatus() == $boleto::STATUS_BAIXA) {
             $this->add(109, 110, self::OCORRENCIA_PEDIDO_BAIXA); // BAIXA
@@ -150,13 +155,16 @@ class Bnb extends AbstractRemessa implements RemessaContract
         $this->add(111, 120, Util::formatCnab('X', $boleto->getNumeroDocumento(), 10));
         $this->add(121, 126, $boleto->getDataVencimento()->format('dmy'));
         $this->add(127, 139, Util::formatCnab('9', $boleto->getValor(), 13));
-        $this->add(140, 142, $this->getCodigoBanco());
+        $this->add(140, 142, '000');
         $this->add(143, 146, '0000');
         $this->add(147, 147, '');
         $this->add(148, 149, $boleto->getEspecieDocCodigo());
         $this->add(150, 150, $boleto->getAceite());
         $this->add(151, 156, $boleto->getDataDocumento()->format('dmy'));
-        $this->add(157, 160, Util::formatCnab('9', self::INSTRUCAO_SEM, 4));
+        $instrucao = ($boleto->getMoraDia() > 0 || $boleto->getMulta() > 0 || $boleto->getDesconto() > 0)
+            ? self::INSTRUCAO_ACATAR_INSTRUCOES_TITULO
+            : self::INSTRUCAO_SEM;
+        $this->add(157, 160, Util::formatCnab('9', $instrucao, 4));
         $this->add(161, 173, Util::formatCnab('9', $boleto->getMoraDia(), 13, 2));
         $this->add(174, 179, $boleto->getDesconto() > 0 ? $boleto->getDataDesconto()->format('dmy') : '000000');
         $this->add(180, 192, Util::formatCnab('9', $boleto->getDesconto(), 13, 2));
@@ -178,9 +186,6 @@ class Bnb extends AbstractRemessa implements RemessaContract
         }
         $this->add(394, 394, '0');
         $this->add(395, 400, Util::formatCnab('9', $this->iRegistros + 1, 6));
-        if ($chaveNfe) {
-            $this->add(401, 444, Util::formatCnab('9', $chaveNfe, 44));
-        }
 
         return $this;
     }

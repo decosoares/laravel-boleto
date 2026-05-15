@@ -122,7 +122,7 @@ class Bnb extends AbstractRetorno implements RetornoCnab400
             ->setDataVencimento($this->rem(147, 152, $detalhe))
             ->setDataCredito($dataCredito)
             ->setValor(Util::nFloat($this->rem(153, 165, $detalhe) / 100, 2, false))
-            ->setValorTarifa(Util::nFloat($this->rem(176, 188, $detalhe) / 100, 2, false))
+            ->setValorTarifa(Util::nFloat(($this->rem(176, 188, $detalhe) + $this->rem(189, 201, $detalhe)) / 100, 2, false))
             ->setValorIOF(Util::nFloat(0.00, 2, false))
             ->setValorAbatimento(Util::nFloat($this->rem(228, 240, $detalhe) / 100, 2, false))
             ->setValorDesconto(Util::nFloat($this->rem(241, 253, $detalhe) / 100, 2, false))
@@ -147,7 +147,8 @@ class Bnb extends AbstractRetorno implements RetornoCnab400
             $d->setOcorrenciaTipo($d::OCORRENCIA_ALTERACAO);
         } elseif ($d->hasOcorrencia('51', '52', '54', '56', '57', '58', '59', '60', '61', '62', '63', '64', '65', '68', '69', '70', '71', '72')) {
             $this->totais['erros']++;
-            $d->setError('Consulte seu Internet Banking');
+            $mensagemErro = trim($this->rem(280, 394, $detalhe));
+            $d->setError($mensagemErro ?: 'Consulte seu Internet Banking');
         } else {
             $d->setOcorrenciaTipo($d::OCORRENCIA_OUTROS);
         }

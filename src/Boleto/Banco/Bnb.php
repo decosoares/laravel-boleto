@@ -38,7 +38,7 @@ class Bnb extends AbstractBoleto implements BoletoContract
      *
      * @var array
      */
-    protected $carteiras = ['21', '31', '41'];
+    protected $carteiras = ['21', '41', '51'];
 
     /**
      * Espécie do documento, coódigo para remessa
@@ -46,12 +46,25 @@ class Bnb extends AbstractBoleto implements BoletoContract
      * @var string
      */
     protected $especiesCodigo = [
-        'DM' => '01',
-        'NP' => '02',
-        'CH' => '03',
-        'CN' => '04',
-        'RC' => '05',
+        'DM'     => '01',
+        'NP'     => '02',
+        'CH'     => '03',
+        'CN'     => '04',
+        'RC'     => '05',
+        'DS'     => '06',
+        'OUTROS' => '19',
     ];
+
+    /**
+     * Carteira 51 (código 'I') é Cobrança Simples: no retorno o banco não preenche
+     * numero_controle, então o consumidor deve fazer matching por nosso_numero + data_vencimento.
+     *
+     * @return bool
+     */
+    public function isCarteiraSimples(): bool
+    {
+        return $this->getCarteira() === '51';
+    }
 
     /**
      * Seta dia para baixa automática
